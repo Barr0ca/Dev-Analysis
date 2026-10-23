@@ -34,3 +34,13 @@ No arquivo local não há valores ausentes em `Mental_Health_Index` nem em `Dail
 | `Mental_Health_Index` | Inteiro | Índice composto de bem-estar, de 10 a 98. **Atributo alvo** |
 | `Academic_Performance_GPA` | Numérico | GPA acumulado, de 1,70 a 4,00 |
 | `Overall_Impact` | Categórico | Classificação do impacto geral: Beneficial, Neutral ou Negative |
+
+## Evidências do pré-processamento
+
+Registro de 23 de outubro de 2026, a partir de `pre-processing/eda.py` e da execução desse script sobre `DataSet.csv`.
+
+A conferência de nulos do script localiza ausência em duas colunas: 46 registros em `Perceived_Stress_Score` e 85 em `Academic_Performance_GPA`. As demais colunas, entre elas `Mental_Health_Index` e `Daily_Usage_Hours`, não têm valores ausentes. A conferência de duplicatas (`duplicated`) retornou 0 linhas repetidas.
+
+O script mantém as 4.500 linhas. Nas duas colunas incompletas, cada valor ausente é preenchido com a média truncada de 10% em cada extremidade, calculada dentro da mesma `Age`. Depois do preenchimento, essas colunas numéricas ficam sem nulos.
+
+Em seguida, as colunas numéricas passam por `StandardScaler`. A figura `pre-processing/images/comparison.png` compara `Age` e `Mental_Health_Index` antes e depois dessa padronização: a nuvem de pontos conserva o mesmo desenho, e os eixos passam a estar em desvios-padrão.

@@ -2,6 +2,7 @@ from src.data.load_data import load_data
 from src.preprocessing.clean_data import select_numeric, null_values
 from src.preprocessing.standardize_data import standardize_numeric_data
 from src.visualization.charts import data_standardization_comparison
+from src.clustering.grouping import run_grouping
 
 def main():
   # Carrega os dados do arquivo CSV
@@ -23,6 +24,24 @@ def main():
   # Compara os dados antes e depois da padronização
   data_standardization_comparison(data, data_scaled)
   print("Comparação dos dados antes e depois da padronização realizada com sucesso")
+
+  # Executa o agrupamento e calcula as métricas
+  results, comparison, profile, kmeans_label_comparison, hierarchical_label_comparison = run_grouping(data)
+
+  print("\nResultados para escolha de k:")
+  print(results)
+
+  print("\nComparação entre algoritmos:")
+  print(comparison)
+
+  print("\nPerfil dos clusters:")
+  print(profile)
+
+  print("\nK-Means - Clusters versus Overall_Impact:")
+  print(kmeans_label_comparison)
+
+  print("\nHierárquico - Clusters versus Overall_Impact:")
+  print(hierarchical_label_comparison)
 
 if __name__ == "__main__":
   main()

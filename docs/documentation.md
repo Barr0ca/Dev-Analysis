@@ -16,24 +16,24 @@ No arquivo local não há valores ausentes em `Mental_Health_Index` nem em `Dail
 
 ### Atributos
 
-| Atributo | Tipo | Descrição |
-| --- | --- | --- |
-| `Student_ID` | Texto | Identificador único do estudante |
-| `Age` | Inteiro | Idade em anos completos (15 a 26) |
-| `Gender` | Categórico | Gênero informado: Female, Male, Non-Binary, Prefer not to say |
-| `Academic_Level` | Categórico | Nível acadêmico: High School, Undergraduate ou Postgraduate |
-| `Primary_Platform` | Categórico | Plataforma mais usada: Instagram, TikTok, YouTube, Snapchat, X (Twitter), Reddit ou LinkedIn |
-| `Daily_Usage_Hours` | Numérico | Tempo médio diário em redes sociais, em horas. Atributo explicativo principal |
-| `Weekend_Extra_Hours` | Numérico | Horas extras de tela nos fins de semana, em relação aos dias de semana |
-| `Device_Type` | Categórico | Dispositivo principal: Smartphone, Laptop/PC ou Tablet |
-| `Sleep_Duration_Hours` | Numérico | Duração média do sono por noite, em horas |
-| `Sleep_Quality_Score` | Inteiro | Qualidade do sono autodeclarada, de 1 (muito ruim) a 5 (excelente) |
-| `Late_Night_Usage` | Booleano | Uso frequente de tela depois da meia-noite |
-| `Social_Comparison_Frequency` | Categórico | Frequência de comparação social: Never, Rarely, Sometimes, Frequently ou Always |
-| `Perceived_Stress_Score` | Numérico | Estresse percebido na escala PSS, de 0 a 40 |
-| `Mental_Health_Index` | Inteiro | Índice composto de bem-estar. No arquivo, de 32 a 98. **Atributo alvo** |
-| `Academic_Performance_GPA` | Numérico | GPA acumulado. No arquivo, de 1,9 a 4,0 |
-| `Overall_Impact` | Categórico | Classificação do impacto geral: Beneficial, Neutral ou Negative |
+| Atributo                      | Tipo       | Descrição                                                                                    |
+| ----------------------------- | ---------- | -------------------------------------------------------------------------------------------- |
+| `Student_ID`                  | Texto      | Identificador único do estudante                                                             |
+| `Age`                         | Inteiro    | Idade em anos completos (15 a 26)                                                            |
+| `Gender`                      | Categórico | Gênero informado: Female, Male, Non-Binary, Prefer not to say                                |
+| `Academic_Level`              | Categórico | Nível acadêmico: High School, Undergraduate ou Postgraduate                                  |
+| `Primary_Platform`            | Categórico | Plataforma mais usada: Instagram, TikTok, YouTube, Snapchat, X (Twitter), Reddit ou LinkedIn |
+| `Daily_Usage_Hours`           | Numérico   | Tempo médio diário em redes sociais, em horas. Atributo explicativo principal                |
+| `Weekend_Extra_Hours`         | Numérico   | Horas extras de tela nos fins de semana, em relação aos dias de semana                       |
+| `Device_Type`                 | Categórico | Dispositivo principal: Smartphone, Laptop/PC ou Tablet                                       |
+| `Sleep_Duration_Hours`        | Numérico   | Duração média do sono por noite, em horas                                                    |
+| `Sleep_Quality_Score`         | Inteiro    | Qualidade do sono autodeclarada, de 1 (muito ruim) a 5 (excelente)                           |
+| `Late_Night_Usage`            | Booleano   | Uso frequente de tela depois da meia-noite                                                   |
+| `Social_Comparison_Frequency` | Categórico | Frequência de comparação social: Never, Rarely, Sometimes, Frequently ou Always              |
+| `Perceived_Stress_Score`      | Numérico   | Estresse percebido na escala PSS, de 0 a 40                                                  |
+| `Mental_Health_Index`         | Inteiro    | Índice composto de bem-estar. No arquivo, de 32 a 98. **Atributo alvo**                      |
+| `Academic_Performance_GPA`    | Numérico   | GPA acumulado. No arquivo, de 1,9 a 4,0                                                      |
+| `Overall_Impact`              | Categórico | Classificação do impacto geral: Beneficial, Neutral ou Negative                              |
 
 ## Pré-processamento
 
@@ -49,6 +49,27 @@ As colunas numéricas estão em escalas diferentes: idade de 15 a 26 anos, horas
 
 `src/visualization/charts.py` grava `reports/figures/comparison.png`. A figura compara `Age` e `Mental_Health_Index` antes e depois da padronização: a nuvem de pontos conserva o desenho, e os eixos passam a estar em desvios-padrão.
 
+## Agrupamento de dados
+
+Registro de 1 de novembro de 2026. A etapa de agrupamento foi implementada em `src/clustering/grouping.py` e é chamada pelo `main.py` depois do pré-processamento inicial.
+
+Para formar os grupos, são utilizadas as colunas numéricas `Age`, `Daily_Usage_Hours`, `Weekend_Extra_Hours`, `Sleep_Duration_Hours`, `Sleep_Quality_Score`, `Perceived_Stress_Score` e `Academic_Performance_GPA`. `Student_ID` não participa dos cálculos porque é apenas um identificador. `Mental_Health_Index` também não entra nas variáveis do agrupamento, pois é o atributo-alvo principal do estudo.
+
+Os valores ausentes de estresse e GPA são preenchidos com a média truncada por idade. Em seguida, as variáveis são padronizadas com `StandardScaler`, evitando que uma coluna com escala maior domine o cálculo das distâncias.
+
+São aplicados dois algoritmos de agrupamento:
+
+1. `KMeans`, um algoritmo particional baseado em centroides;
+2. `AgglomerativeClustering`, um algoritmo hierárquico.
+
+O `KMeans` é testado com valores de `k` entre 2 e 6. O valor escolhido é aquele que apresenta o maior `Silhouette Score`. Esse mesmo número de grupos é utilizado no agrupamento hierárquico para permitir a comparação entre os algoritmos.
+
+A avaliação dos grupos utiliza as métricas internas `Silhouette Score`, `Calinski-Harabasz` e `Davies-Bouldin`. Também são calculadas as métricas externas `Adjusted Rand Index` e `Normalized Mutual Information`, comparando os agrupamentos com a rotulação existente na coluna `Overall_Impact`.
+
+`Overall_Impact` não é utilizado como entrada dos algoritmos. Ele é reservado como rótulo externo e possui as classes `Beneficial`, `Neutral` e `Negative`. A comparação também é apresentada em duas tabelas cruzadas: uma entre `Overall_Impact` e os clusters do `KMeans`, e outra entre `Overall_Impact` e os clusters do algoritmo hierárquico.
+
+Além das métricas, é calculado o perfil médio dos clusters do `KMeans` para as variáveis utilizadas no agrupamento. Esse perfil permite interpretar as características de cada grupo, como tempo de uso, duração do sono, estresse e desempenho acadêmico.
+
 Ordem executada por `python main.py`, na raiz do projeto:
 
 1. Carregar `data/raw/dataset.csv`
@@ -56,3 +77,7 @@ Ordem executada por `python main.py`, na raiz do projeto:
 3. Preencher ausentes com a média truncada por idade
 4. Padronizar com `StandardScaler`
 5. Salvar a comparação de `Age` e `Mental_Health_Index`
+6. Selecionar as variáveis utilizadas no agrupamento
+7. Testar valores de `k` no `KMeans`
+8. Executar o `KMeans` e o agrupamento hierárquico
+9. Calcular as métricas e comparar os clusters com `Overall_Impact`

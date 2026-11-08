@@ -1,0 +1,294 @@
+\documentclass[
+  article,
+  12pt,
+  oneside,
+  a4paper,
+  english,
+  brazil,
+  chapter=TITLE,
+  section=TITLE,
+  subsection=TITLE
+]{abntex2}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{newtxtext,newtxmath}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage{placeins}
+\usepackage{listingsutf8}
+
+\lstset{
+  inputencoding=utf8/latin1,
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  tabsize=2,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny,
+  numbersep=8pt,
+  xleftmargin=2em,
+  framexleftmargin=1.6em,
+  aboveskip=8pt,
+  belowskip=8pt
+}
+
+\makeatletter
+\g@addto@macro{\UrlBreaks}{\do\_}
+\makeatother
+
+\titulo{Agrupamento de dados sobre redes sociais e saúde mental de estudantes}
+\autor{Ian de Araújo \and Jardson Alan}
+\local{Rio Grande do Norte}
+\data{2026}
+\instituicao{%
+  Instituto Federal de Educação, Ciência e Tecnologia\\
+  do Rio Grande do Norte%
+}
+\preambulo{%
+  Artigo apresentado à disciplina de Análise de Dados do Instituto Federal
+  de Educação, Ciência e Tecnologia do Rio Grande do Norte, com o registro
+  da etapa de agrupamento do projeto.%
+}
+
+\hypersetup{
+  hidelinks,
+  pdftitle={Agrupamento de dados sobre redes sociais e saúde mental de estudantes},
+  pdfauthor={Ian de Araújo; Jardson Alan}
+}
+
+\renewcommand{\imprimircapa}{%
+  \begin{capa}%
+    \SingleSpacing
+    \begin{center}
+      \imprimirinstituicao\par
+      \vspace*{\fill}
+      \imprimirautor\par
+      \vspace*{\fill}
+      {\bfseries\imprimirtitulo\par}
+      \vspace*{\fill}
+      \imprimirlocal\par
+      \imprimirdata\par
+    \end{center}
+    \vspace*{1cm}
+  \end{capa}%
+}
+
+\renewcommand{\folhaderostocontent}{%
+  \SingleSpacing
+  \begin{center}
+    \imprimirautor\par
+  \end{center}
+  \vspace{3.2cm}
+  \begin{center}
+    {\bfseries\imprimirtitulo\par}
+  \end{center}
+  \vspace{2.2cm}
+  \hfill
+  \begin{minipage}[t]{.46\textwidth}
+    \imprimirpreambulo
+  \end{minipage}
+  \vspace{3.2cm}
+  \begin{center}
+    \imprimirlocal\par
+    \imprimirdata\par
+  \end{center}
+}
+
+\AtBeginDocument{%
+  \setlength{\absleftindent}{0pt}%
+  \setlength{\absrightindent}{0pt}%
+  \setlength{\absparindent}{0pt}%
+  \setlength{\emergencystretch}{2.5em}%
+}
+
+\begin{document}
+
+\pretextual
+\imprimircapa
+\imprimirfolhaderosto
+
+\textual
+
+\begin{center}
+  \bfseries\imprimirtitulo
+\end{center}
+
+\vspace{0.75\baselineskip}
+\noindent Ian de Araújo\footnotemark{} e Jardson Alan\footnotemark[\value{footnote}]
+\footnotetext{Estudantes da disciplina de Análise de Dados do Instituto Federal de Educação, Ciência e Tecnologia do Rio Grande do Norte.}
+
+\begin{resumo}
+Esta etapa agrupa 4.500 estudantes com sete medidas numéricas: idade, horas diárias de redes sociais, horas extras no fim de semana, duração e qualidade do sono, estresse percebido e GPA. O índice de saúde mental permanece fora das entradas, por ser o atributo-alvo do estudo. Os vazios de estresse e de GPA recebem a média truncada por idade, e as colunas são padronizadas. São aplicados o K-Means e o agrupamento hierárquico com ligação de Ward. O número de grupos é o valor de \(k\), entre 2 e 6, com maior \textit{Silhouette Score} no K-Means. Esse valor é 2, e o mesmo \(k\) é usado no algoritmo hierárquico. Nesse corte, o K-Means supera o hierárquico nas métricas internas e na concordância com a rotulação \texttt{Overall\_Impact}. O grupo de maior uso diário reúne todos os registros \texttt{Negative} e quase todos os \texttt{Neutral}. O outro grupo é formado sobretudo por registros \texttt{Beneficial}.
+
+\vspace{\onelineskip}
+\noindent
+\textbf{Palavras-chave}: Agrupamento. K-Means. Agrupamento hierárquico. Redes sociais. Saúde mental.
+\end{resumo}
+
+\section{Etapa de agrupamento}
+
+O registro desta etapa é de 1 de novembro de 2026. A implementação está em \texttt{src/clustering/}\allowbreak\texttt{grouping.py} e é chamada por \texttt{main.py} depois do pré-processamento. O conjunto continua sendo \path{data/raw/dataset.csv}, com 4.500 estudantes (YADAV, 2026).
+
+O objetivo desta entrega é formar grupos com mais de um algoritmo e comparar os grupos descobertos com uma rotulação já existente no arquivo. A rotulação usada na comparação é \texttt{Overall\_Impact}, com as classes \texttt{Beneficial}, \texttt{Neutral} e \texttt{Negative}. Ela não entra como variável dos algoritmos. \texttt{Mental\_Health\_Index} também fica de fora das entradas, porque é o atributo-alvo do estudo e não deve definir os grupos que depois seriam descritos por ele.
+
+\section{Variáveis}
+
+As colunas usadas para formar os grupos são as sete abaixo. \texttt{Student\_ID} não participa, porque é apenas um identificador.
+
+\begin{itemize}[topsep=4pt,itemsep=1pt,parsep=0pt]
+  \item \texttt{Age}, \texttt{Daily\_Usage\_Hours} e \texttt{Weekend\_Extra\_Hours}.
+  \item \texttt{Sleep\_Duration\_Hours} e \texttt{Sleep\_Quality\_Score}.
+  \item \texttt{Perceived\_Stress\_Score} e \texttt{Academic\_Performance\_GPA}.
+\end{itemize}
+
+Os valores ausentes de estresse e de GPA são preenchidos com a média truncada de 10\% em cada extremidade, dentro da mesma idade. Em seguida, as sete colunas passam por \texttt{StandardScaler}, para que uma escala maior não domine o cálculo das distâncias. Os algoritmos e as métricas vêm do scikit-learn.
+
+\section{Algoritmos}
+
+São aplicados dois algoritmos.
+
+O K-Means é particional e representa cada grupo por um centroide. Na busca do número de grupos, \(k\) varia de 2 a 6, com inicialização \texttt{k-means++}, 20 inicializações e \texttt{random\_state} igual a 42. O \(k\) escolhido é o de maior \textit{Silhouette Score}. O modelo final repete o K-Means com esse \(k\), 50 inicializações e no máximo 500 iterações.
+
+O segundo algoritmo é o \texttt{AgglomerativeClustering}, hierárquico, com ligação de Ward e o mesmo número de grupos do K-Means. A ligação de Ward usa distância euclidiana, compatível com as colunas já padronizadas.
+
+\section{Escolha do número de grupos}
+
+A Tabela~\ref{tab:k} reúne as métricas do K-Means para cada \(k\). Silhouette e Calinski-Harabasz são maiores quando os grupos estão mais separados. Davies-Bouldin é menor nesse caso. O \textit{Adjusted Rand Index} (ARI) e a \textit{Normalized Mutual Information} (NMI) comparam os grupos com \texttt{Overall\_Impact}: quanto mais próximos de 1, maior a concordância com essa rotulação.
+
+\begin{table}[htb]
+  \centering
+  \caption{Métricas do K-Means para \(k\) de 2 a 6}
+  \label{tab:k}
+  \small
+  \begin{tabular}{rrrrrr}
+    \toprule
+    \(k\) & Silhouette & Calinski-Harabasz & Davies-Bouldin & ARI & NMI \\
+    \midrule
+    2 & 0,2993 & 2307,90 & 1,2769 & 0,4106 & 0,3778 \\
+    3 & 0,1982 & 1738,36 & 1,5967 & 0,2767 & 0,3859 \\
+    4 & 0,1802 & 1421,98 & 1,6247 & 0,1754 & 0,3268 \\
+    5 & 0,1632 & 1251,70 & 1,6373 & 0,1075 & 0,2896 \\
+    6 & 0,1549 & 1147,06 & 1,5516 & 0,0925 & 0,2809 \\
+    \bottomrule
+  \end{tabular}
+  \fonte{Elaborado pelos autores (2026), pela execução de \texttt{python main.py}.}
+\end{table}
+
+O maior Silhouette Score é 0,2993, em \(k = 2\). Esse corte também tem o maior Calinski-Harabasz, o menor Davies-Bouldin e o maior ARI. A NMI é um pouco maior em \(k = 3\) (0,3859 contra 0,3778), mas a regra implementada escolhe o \(k\) pela silhueta. Os dois algoritmos seguem, portanto, com dois grupos.
+
+\section{Comparativo entre os algoritmos}
+
+A Tabela~\ref{tab:algoritmos} compara o K-Means final e o agrupamento hierárquico, ambos com dois grupos. O K-Means fica à frente nas três métricas internas: silhueta 0,2993 contra 0,2442, Calinski-Harabasz 2307,90 contra 1829,67 e Davies-Bouldin 1,2769 contra 1,4573. Também fica à frente na concordância com \texttt{Overall\_Impact}: ARI 0,4106 contra 0,2505 e NMI 0,3778 contra 0,2421.
+
+\begin{table}[htb]
+  \centering
+  \caption{Comparação entre K-Means e agrupamento hierárquico, com \(k = 2\)}
+  \label{tab:algoritmos}
+  \small
+  \begin{tabular}{lrrrrr}
+    \toprule
+    Algoritmo & Silhouette & Calinski-Harabasz & Davies-Bouldin & ARI & NMI \\
+    \midrule
+    K-Means & 0,2993 & 2307,90 & 1,2769 & 0,4106 & 0,3778 \\
+    Hierárquico & 0,2442 & 1829,67 & 1,4573 & 0,2505 & 0,2421 \\
+    \bottomrule
+  \end{tabular}
+  \fonte{Elaborado pelos autores (2026), pela execução de \texttt{python main.py}.}
+\end{table}
+
+\section{Perfil dos grupos}
+
+A Tabela~\ref{tab:perfil} traz a média de cada variável no K-Means. A idade e as horas extras de fim de semana quase não separam os grupos. O que os separa é o uso diário, o sono, o estresse e o GPA.
+
+\begin{table}[htb]
+  \centering
+  \caption{Média das variáveis em cada grupo do K-Means}
+  \label{tab:perfil}
+  \footnotesize
+  \begin{tabular}{rrrrrrr}
+    \toprule
+    Grupo & Idade & Uso diário & Sono & Qualidade & Estresse & GPA \\
+    \midrule
+    0 & 18,64 & 7,94 & 5,56 & 1,48 & 20,02 & 3,08 \\
+    1 & 18,74 & 3,92 & 7,30 & 2,99 & 10,12 & 3,61 \\
+    \bottomrule
+  \end{tabular}
+  \fonte{Elaborado pelos autores (2026), pela execução de \texttt{python main.py}.}
+\end{table}
+
+O grupo 0 reúne estudantes com mais horas diárias de redes sociais (7,94), menos sono (5,56 horas), pior qualidade de sono (1,48), mais estresse (20,02) e GPA mais baixo (3,08). O grupo 1 inverte esse perfil: 3,92 horas diárias, 7,30 horas de sono, qualidade 2,99, estresse 10,12 e GPA 3,61. As horas extras de fim de semana ficam em 1,78 no grupo 0 e 1,80 no grupo 1.
+
+O código calcula esse perfil só para o K-Means.
+
+\section{Comparativo com a rotulação existente}
+
+\texttt{Overall\_Impact} tem 3.681 registros \texttt{Beneficial}, 654 \texttt{Neutral} e 165 \texttt{Negative}. As Tabelas~\ref{tab:km} e~\ref{tab:hi} cruzam essa rotulação com os grupos de cada algoritmo. Os números dos grupos são atribuídos por cada algoritmo. Nesta execução, os dois colocaram o mesmo tipo de estudante no grupo 0.
+
+\begin{table}[htb]
+  \centering
+  \caption{Grupos do K-Means e rotulação \texttt{Overall\_Impact}}
+  \label{tab:km}
+  \begin{tabular}{lrr}
+    \toprule
+    \texttt{Overall\_Impact} & Grupo 0 & Grupo 1 \\
+    \midrule
+    Beneficial & 728 & 2953 \\
+    Negative & 165 & 0 \\
+    Neutral & 648 & 6 \\
+    \bottomrule
+  \end{tabular}
+  \fonte{Elaborado pelos autores (2026), pela execução de \texttt{python main.py}.}
+\end{table}
+
+\begin{table}[htb]
+  \centering
+  \caption{Grupos do algoritmo hierárquico e rotulação \texttt{Overall\_Impact}}
+  \label{tab:hi}
+  \begin{tabular}{lrr}
+    \toprule
+    \texttt{Overall\_Impact} & Grupo 0 & Grupo 1 \\
+    \midrule
+    Beneficial & 1002 & 2679 \\
+    Negative & 165 & 0 \\
+    Neutral & 600 & 54 \\
+    \bottomrule
+  \end{tabular}
+  \fonte{Elaborado pelos autores (2026), pela execução de \texttt{python main.py}.}
+\end{table}
+
+\FloatBarrier
+
+Nos dois algoritmos, os 165 registros \texttt{Negative} caem no grupo 0, o de maior uso diário e maior estresse no perfil do K-Means. O \texttt{Neutral} também se concentra nesse grupo: 648 contra 6 no K-Means e 600 contra 54 no hierárquico. O \texttt{Beneficial} predomina no grupo 1: 2.953 contra 728 no K-Means e 2.679 contra 1.002 no hierárquico. A concordância é parcial. Há três classes e dois grupos, e uma parte dos registros \texttt{Beneficial} permanece no grupo de maior uso. O ARI de 0,4106 no K-Means, contra 0,2505 no hierárquico, quantifica essa diferença: o K-Means acompanha melhor a rotulação existente, sem reproduzi-la.
+
+\section{Código utilizado}
+
+As listagens abaixo são os arquivos desta etapa, na forma em que estão no repositório. \texttt{grouping.py} prepara as sete variáveis, escolhe \(k\), executa os dois algoritmos e monta as tabelas de comparação. \texttt{main.py} chama essa rotina depois do pré-processamento e imprime os resultados.
+
+\subsection{Chamada no fluxo}
+
+Arquivo \texttt{main.py}.
+
+\lstinputlisting{../../main.py}
+
+\subsection{Agrupamento}
+
+Arquivo \texttt{src/clustering/}\allowbreak\texttt{grouping.py}.
+
+\lstinputlisting{../../src/clustering/grouping.py}
+
+\postextual
+
+\begin{thebibliography}{9}
+
+\bibitem{yadav2026}
+YADAV, Harish. \textbf{Impact of Social Media on Life}. 2026. Conjunto de dados. Disponível em: \url{https://www.kaggle.com/datasets/harishyadav0506/impact-of-social-media-on-life}. Acesso em: 2 nov. 2026.
+
+\end{thebibliography}
+
+\end{document}

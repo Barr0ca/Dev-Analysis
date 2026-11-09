@@ -56,11 +56,13 @@ def tree_classifier(data: pd.DataFrame):
     print("Acurácia no teste:", accuracy_score(y_test, predicted))
 
     print("\nRelatório por classe:")
-    print(classification_report(
-        y_test,
-        predicted,
-        target_names=encoder.classes_,
-    ))
+    print(
+        classification_report(
+            y_test,
+            predicted,
+            target_names=encoder.classes_,
+        )
+    )
 
     comparison = pd.crosstab(
         real_labels,

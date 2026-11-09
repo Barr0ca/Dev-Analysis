@@ -4,6 +4,7 @@ from src.preprocessing.standardize_data import standardize_numeric_data
 from src.visualization.charts import data_standardization_comparison
 from src.clustering.grouping import run_grouping
 from src.classifiers.naive_bayes import nb_classifier
+from src.classifiers.tree_decision import tree_classifier
 
 def main():
   # Carrega os dados do arquivo CSV
@@ -32,6 +33,10 @@ def main():
   # Executa o classificador Naive Bayes
   nb_classifier(data)
   print("\nClassificador Naive Bayes executado com sucesso")
+
+  # Executa o classificador de árvore de decisão
+  tree_classifier(data)
+  print("\nClassificador de árvore de decisão executado com sucesso")
 
   print("\nResultados para escolha de k:")
   print(results)

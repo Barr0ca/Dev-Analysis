@@ -1,7 +1,7 @@
 from src.data.load_data import load_data
 from src.preprocessing.clean_data import select_numeric, null_values
 from src.preprocessing.standardize_data import standardize_numeric_data
-from src.visualization.charts import data_standardization_comparison
+from src.visualization.charts import classification_charts, data_standardization_comparison
 from src.clustering.grouping import run_grouping
 from src.classifiers.naive_bayes import nb_classifier
 from src.classifiers.tree_decision import tree_classifier
@@ -31,12 +31,22 @@ def main():
   results, comparison, profile, kmeans_label_comparison, hierarchical_label_comparison = run_grouping(data)
 
   # Executa o classificador Naive Bayes
-  nb_classifier(data)
+  nb_result = nb_classifier(data)
   print("\nClassificador Naive Bayes executado com sucesso")
 
   # Executa o classificador de árvore de decisão
-  tree_classifier(data)
+  tree_result = tree_classifier(data)
   print("\nClassificador de árvore de decisão executado com sucesso")
+
+  # Gráficos da etapa de classificação
+  classification_charts(
+    data,
+    nb_result["scores"],
+    tree_result["scores"],
+    nb_result["comparison"],
+    tree_result["comparison"],
+  )
+  print("Gráficos da classificação gravados com sucesso")
 
   print("\nResultados para escolha de k:")
   print(results)

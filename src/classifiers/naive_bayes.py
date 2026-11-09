@@ -1,6 +1,6 @@
 import pandas as pd
 from sklearn.metrics import accuracy_score, classification_report
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import LabelEncoder
 
@@ -19,7 +19,14 @@ def nb_classifier(data: pd.DataFrame):
     # Classificador GaussianNB
     model = GaussianNB()
 
-    # Modelo de treinamento
+    # Desempenho pela validação cruzada, no conjunto inteiro
+    scores = cross_val_score(model, X, y, cv=5, scoring="accuracy")
+    print("\nNaive Bayes")
+    print("Validação cruzada (5 folds):", scores)
+    print("Acurácia média:", scores.mean())
+    print("Desvio-padrão:", scores.std())
+
+    # Modelo de treinamento no recorte de treino
     model.fit(X_train, y_train)
 
     # Codificacao dos valores reais (nomes)
@@ -30,7 +37,7 @@ def nb_classifier(data: pd.DataFrame):
     real_labels = encoder.inverse_transform(y_test)
     predicted_labels = encoder.inverse_transform(predicted)
 
-    print("\nAcurácia:", accuracy_score(y_test, predicted))
+    print("Acurácia no teste:", accuracy_score(y_test, predicted))
 
     print("\nRelatório por classe:")
     print(classification_report(
@@ -52,4 +59,8 @@ def nb_classifier(data: pd.DataFrame):
     print("Valor real:", real_labels[7])
     print("Valor previsto:", predicted_labels[7])
 
-    return model
+    return {
+        "model": model,
+        "scores": scores,
+        "comparison": comparison,
+    }

@@ -1,6 +1,6 @@
 import pandas as pd
 from sklearn.metrics import accuracy_score, classification_report
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.tree import DecisionTreeClassifier
 
@@ -15,9 +15,36 @@ def tree_classifier(data: pd.DataFrame):
     )
 
     # Árvore de decisão. A mesma semente do Naive Bayes deixa a comparação reproduzível.
-    model = DecisionTreeClassifier(random_state=125)
+    # A grade escolhe os hiperparâmetros só no recorte de treino.
+    search = GridSearchCV(
+        DecisionTreeClassifier(random_state=125),
+        {
+            "criterion": ["gini", "entropy"],
+            "max_depth": [3, 5, 7, 10, None],
+            "min_samples_split": [2, 5, 10],
+            "min_samples_leaf": [1, 2, 4],
+        },
+        cv=5,
+        scoring="accuracy",
+        n_jobs=-1,
+    )
+    search.fit(X_train, y_train)
+    model = search.best_estimator_
 
-    model.fit(X_train, y_train)
+    print("\nÁrvore de decisão")
+    print("Melhores hiperparâmetros:", search.best_params_)
+
+    # Desempenho pela validação cruzada, com os hiperparâmetros escolhidos
+    scores = cross_val_score(
+        DecisionTreeClassifier(random_state=125, **search.best_params_),
+        X,
+        y,
+        cv=5,
+        scoring="accuracy",
+    )
+    print("Validação cruzada (5 folds):", scores)
+    print("Acurácia média:", scores.mean())
+    print("Desvio-padrão:", scores.std())
 
     encoder = LabelEncoder()
     encoder.fit(data["Overall_Impact"])
@@ -26,8 +53,7 @@ def tree_classifier(data: pd.DataFrame):
     real_labels = encoder.inverse_transform(y_test)
     predicted_labels = encoder.inverse_transform(predicted)
 
-    print("\nÁrvore de decisão")
-    print("Acurácia:", accuracy_score(y_test, predicted))
+    print("Acurácia no teste:", accuracy_score(y_test, predicted))
 
     print("\nRelatório por classe:")
     print(classification_report(
@@ -49,4 +75,8 @@ def tree_classifier(data: pd.DataFrame):
     print("Valor real:", real_labels[7])
     print("Valor previsto:", predicted_labels[7])
 
-    return model
+    return {
+        "model": model,
+        "scores": scores,
+        "comparison": comparison,
+    }

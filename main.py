@@ -1,3 +1,4 @@
+from src.classifiers.knn import knn_classifier
 from src.classifiers.naive_bayes import nb_classifier
 from src.classifiers.tree_decision import tree_classifier
 from src.clustering.grouping import run_grouping
@@ -7,6 +8,7 @@ from src.preprocessing.standardize_data import standardize_numeric_data
 from src.visualization.charts import (
     classification_charts,
     data_standardization_comparison,
+    knn_charts,
 )
 
 
@@ -57,6 +59,21 @@ def main():
         tree_result["comparison"],
     )
     print("Gráficos da classificação gravados com sucesso")
+
+    # Executa o classificador k-NN (k escolhido por GridSearchCV)
+    knn_result = knn_classifier(data)
+    print("\nClassificador k-NN executado com sucesso")
+
+    # Gráficos do k-NN e comparação com os demais classificadores
+    knn_charts(
+        knn_result["k_results"],
+        knn_result["best_k"],
+        nb_result["scores"],
+        tree_result["scores"],
+        knn_result["scores"],
+        knn_result["comparison"],
+    )
+    print("Gráficos do k-NN gravados com sucesso")
 
     print("\nResultados para escolha de k:")
     print(results)

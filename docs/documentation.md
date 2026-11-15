@@ -81,3 +81,42 @@ Ordem executada por `python main.py`, na raiz do projeto:
 7. Testar valores de `k` no `KMeans`
 8. Executar o `KMeans` e o agrupamento hierárquico
 9. Calcular as métricas e comparar os clusters com `Overall_Impact`
+
+## Classificação com Naive Bayes
+
+Registro de 9 de novembro de 2026. A etapa foi implementada em `src/classifiers/naive_bayes.py` e é chamada pelo `main.py` depois do agrupamento.
+
+O atributo previsto é `Overall_Impact`, com as classes `Beneficial` (3.681 registros), `Neutral` (654) e `Negative` (165). As entradas vêm de `prepare_data`, em `src/clustering/grouping.py`: as sete colunas numéricas do agrupamento, com os vazios de estresse e de GPA preenchidos pela média truncada por idade e padronização com `StandardScaler`. `Student_ID` e `Mental_Health_Index` não entram, e a classe também não é usada como entrada.
+
+Os registros são divididos em treino e teste, com 33% para teste e `random_state=125`. Essa mesma divisão é usada nos outros classificadores, o que permite compará-los.
+
+O modelo é o `GaussianNB`, adequado a colunas numéricas. Não há busca de hiperparâmetros. O desempenho é medido por `cross_val_score`, com 5 partes e acurácia, sobre o conjunto inteiro. A média foi 0,9238 e o desvio-padrão 0,0090. No recorte de teste, a acurácia foi 0,9178. A classe `Negative` foi bem recuperada (49 de 52 acertos), e a maior troca ocorreu entre `Beneficial` e `Neutral` (84 registros `Beneficial` previstos como `Neutral`).
+
+## Classificação com árvore de decisão
+
+Registro de 9 de novembro de 2026. A etapa foi implementada em `src/classifiers/tree_decision.py` e é chamada pelo `main.py` depois do Naive Bayes. As entradas, a classe prevista e a divisão treino/teste são as mesmas do Naive Bayes.
+
+O modelo é o `DecisionTreeClassifier`, com hiperparâmetros escolhidos por `GridSearchCV` só no recorte de treino, com 5 partes internas e acurácia como critério. A grade combina:
+
+1. `criterion`: `gini` ou `entropy`;
+2. `max_depth`: 3, 5, 7, 10 ou sem limite;
+3. `min_samples_split`: 2, 5 ou 10;
+4. `min_samples_leaf`: 1, 2 ou 4.
+
+O conjunto escolhido foi `gini`, `max_depth=7`, `min_samples_split=10` e `min_samples_leaf=4`. Uma árvore nova, com esses hiperparâmetros, foi avaliada por `cross_val_score` (5 partes, acurácia) sobre o conjunto inteiro. A média foi 0,9480 e o desvio-padrão 0,0074. No recorte de teste, a acurácia foi 0,9434. A árvore acertou 1.186 dos 1.204 `Beneficial` e 44 dos 52 `Negative`. O `Neutral` foi a classe mais confundida: 51 desses registros foram previstos como `Beneficial`.
+
+Os gráficos da classificação (contagem das classes, validação cruzada das cinco partes e matrizes de confusão) são gravados por `classification_charts`, em `src/visualization/charts.py`, em `reports/figures/`. O artigo da etapa está em `docs/article/classificacao/classificacao.tex`.
+
+## Classificação com k-NN
+
+Registro de 15 de novembro de 2026. A etapa foi implementada em `src/classifiers/knn.py` e é chamada pelo `main.py` depois do Naive Bayes e da árvore de decisão. Os gráficos ficam em `knn_charts`, em `src/visualization/charts.py`.
+
+O atributo previsto é `Overall_Impact`. As entradas vêm de `prepare_data`, em `src/clustering/grouping.py`: as sete colunas numéricas do agrupamento, com média truncada por idade nos vazios e padronização com `StandardScaler`. A padronização importa porque o k-NN classifica pela distância euclidiana. `Student_ID` e `Mental_Health_Index` não entram.
+
+O recorte é o mesmo dos outros classificadores: 33% dos registros para teste e `random_state=125`.
+
+O `GridSearchCV` escolhe o valor de `k` só no recorte de treino, com `KNeighborsClassifier`, `k` ímpar de 1 a 31 (para evitar empates na votação), 5 partes internas e acurácia como critério. O melhor valor foi `k = 3`.
+
+O desempenho é medido por `cross_val_score`, com 5 partes e acurácia, usando um k-NN novo com o `k` escolhido sobre o conjunto inteiro. A média foi 0,9444 e o desvio-padrão 0,0065. No recorte de teste a acurácia foi 0,9401 e a ROC AUC (um contra os demais, média macro) foi 0,9422. Para comparação, o Naive Bayes teve média 0,9238 e a árvore de decisão 0,9480.
+
+São gravados `reports/figures/knn_k_selection.png` (acurácia por `k`), `knn_cross_validation.png` (as cinco partes dos três classificadores) e `knn_confusion_matrix.png` (matriz do teste). O artigo da etapa está em `docs/article/knn/knn.tex`.

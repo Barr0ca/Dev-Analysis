@@ -180,3 +180,72 @@ def knn_charts(k_results, best_k, nb_scores, tree_scores, knn_scores, knn_matrix
     fig.tight_layout()
     fig.savefig("./reports/figures/knn_confusion_matrix.png", dpi=150)
     plt.close(fig)
+
+def rna_svm_charts(scores, mlp_loss, mlp_validation, mlp_matrix, svm_matrix):
+    # Acurácia média e desvio-padrão da validação cruzada dos cinco classificadores
+    names = list(scores)
+    means = [values.mean() for values in scores.values()]
+    stds = [values.std() for values in scores.values()]
+    colors = ["#4C78A8", "#F58518", "#54A24B", "#B279A2", "#E45756"]
+
+    fig, ax = plt.subplots(figsize=(9, 4))
+    bars = ax.bar(names, means, yerr=stds, capsize=4, color=colors)
+    ax.bar_label(bars, fmt="%.4f", padding=6, fontsize=8)
+    ax.set_ylim(0.90, 0.98)
+    ax.set_title("Validação cruzada (média e desvio-padrão)")
+    ax.set_ylabel("Acurácia")
+    fig.tight_layout()
+    fig.savefig("./reports/figures/models_cross_validation.png", dpi=150)
+    plt.close(fig)
+
+    # Curva de treino do MLP: perda no treino e acurácia na parte de validação interna
+    epochs = range(1, len(mlp_loss) + 1)
+
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+    axes[0].plot(epochs, mlp_loss, color="#B279A2")
+    axes[0].set_title("Perda no treino")
+    axes[0].set_xlabel("Iteração")
+    axes[0].set_ylabel("Perda")
+    axes[0].grid(alpha=0.3)
+    axes[1].plot(epochs, mlp_validation, color="#54A24B")
+    axes[1].set_title("Acurácia na validação interna")
+    axes[1].set_xlabel("Iteração")
+    axes[1].set_ylabel("Acurácia")
+    axes[1].grid(alpha=0.3)
+    fig.tight_layout()
+    fig.savefig("./reports/figures/mlp_training.png", dpi=150)
+    plt.close(fig)
+
+    # Matrizes de confusão do recorte de teste
+    labels = ["Beneficial", "Negative", "Neutral"]
+    matrices = (
+        (mlp_matrix.reindex(index=labels, columns=labels), "MLP"),
+        (svm_matrix.reindex(index=labels, columns=labels), "SVM"),
+    )
+
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+    for ax, (matrix, title) in zip(axes, matrices):
+        values = matrix.to_numpy()
+        ax.imshow(values, cmap="Blues")
+        ax.set_xticks(range(len(labels)))
+        ax.set_yticks(range(len(labels)))
+        ax.set_xticklabels(labels)
+        ax.set_yticklabels(labels)
+        ax.set_xlabel("Previsto")
+        ax.set_ylabel("Real")
+        ax.set_title(title)
+        darkest = values.max() / 2
+        for row in range(values.shape[0]):
+            for column in range(values.shape[1]):
+                color = "white" if values[row, column] > darkest else "black"
+                ax.text(
+                    column,
+                    row,
+                    int(values[row, column]),
+                    ha="center",
+                    va="center",
+                    color=color,
+                )
+    fig.tight_layout()
+    fig.savefig("./reports/figures/mlp_svm_confusion_matrices.png", dpi=150)
+    plt.close(fig)

@@ -1,5 +1,7 @@
 from src.classifiers.knn import knn_classifier
+from src.classifiers.mlp import mlp_classifier
 from src.classifiers.naive_bayes import nb_classifier
+from src.classifiers.svm import svm_classifier
 from src.classifiers.tree_decision import tree_classifier
 from src.clustering.grouping import run_grouping
 from src.data.load_data import load_data
@@ -9,8 +11,8 @@ from src.visualization.charts import (
     classification_charts,
     data_standardization_comparison,
     knn_charts,
+    rna_svm_charts,
 )
-
 
 def main():
     # Carrega os dados do arquivo CSV
@@ -75,6 +77,30 @@ def main():
     )
     print("Gráficos do k-NN gravados com sucesso")
 
+    # Executa a rede neural MLP (hiperparâmetros escolhidos por GridSearchCV)
+    mlp_result = mlp_classifier(data)
+    print("\nClassificador MLP executado com sucesso")
+
+    # Executa o SVM (hiperparâmetros escolhidos por GridSearchCV)
+    svm_result = svm_classifier(data)
+    print("\nClassificador SVM executado com sucesso")
+
+    # Gráficos do MLP e do SVM e comparação entre os cinco classificadores
+    rna_svm_charts(
+        {
+            "Naive Bayes": nb_result["scores"],
+            "Árvore de decisão": tree_result["scores"],
+            "k-NN": knn_result["scores"],
+            "MLP": mlp_result["scores"],
+            "SVM": svm_result["scores"],
+        },
+        mlp_result["loss_curve"],
+        mlp_result["validation_scores"],
+        mlp_result["comparison"],
+        svm_result["comparison"],
+    )
+    print("Gráficos do MLP e do SVM gravados com sucesso")
+
     print("\nResultados para escolha de k:")
     print(results)
 
@@ -89,7 +115,6 @@ def main():
 
     print("\nHierárquico - Clusters versus Overall_Impact:")
     print(hierarchical_label_comparison)
-
 
 if __name__ == "__main__":
     main()

@@ -120,3 +120,24 @@ O `GridSearchCV` escolhe o valor de `k` só no recorte de treino, com `KNeighbor
 O desempenho é medido por `cross_val_score`, com 5 partes e acurácia, usando um k-NN novo com o `k` escolhido sobre o conjunto inteiro. A média foi 0,9444 e o desvio-padrão 0,0065. No recorte de teste a acurácia foi 0,9401 e a ROC AUC (um contra os demais, média macro) foi 0,9422. Para comparação, o Naive Bayes teve média 0,9238 e a árvore de decisão 0,9480.
 
 São gravados `reports/figures/knn_k_selection.png` (acurácia por `k`), `knn_cross_validation.png` (as cinco partes dos três classificadores) e `knn_confusion_matrix.png` (matriz do teste). O artigo da etapa está em `docs/article/knn/knn.tex`.
+
+## Classificação com MLP e SVM
+
+Registro de 22 de novembro de 2026. A etapa foi implementada em `src/classifiers/mlp.py` e `src/classifiers/svm.py`, e é chamada pelo `main.py` depois do k-NN. Os gráficos ficam em `rna_svm_charts`, em `src/visualization/charts.py`.
+
+O atributo previsto é `Overall_Impact`. As entradas vêm de `prepare_data`, em `src/clustering/grouping.py`: as sete colunas numéricas do agrupamento, com média truncada por idade nos vazios. Diferente dos classificadores anteriores, aqui é usada a primeira saída da função, sem padronizar. A padronização com `StandardScaler` fica dentro de um `Pipeline`, antes do modelo, porque MLP e SVM são sensíveis à escala. Assim, a padronização é aprendida só nos dados de treino de cada parte da busca e da validação cruzada, sem vazamento. `Student_ID` e `Mental_Health_Index` não entram. O recorte é o mesmo dos outros classificadores: 33% dos registros para teste e `random_state=125`.
+
+A rede neural é o `MLPClassifier`, com `adam`, até 500 iterações e parada antecipada (20% do treino como validação interna e 20 iterações sem melhora). O `GridSearchCV` escolhe os hiperparâmetros só no recorte de treino, com 5 partes internas e acurácia como critério. A grade tem 48 combinações:
+
+1. `hidden_layer_sizes`: `(32,)`, `(32, 16)`, `(64, 32)` ou `(64, 32, 16)`;
+2. `activation`: `relu` ou `tanh`;
+3. `alpha`: 0,0001, 0,001 ou 0,01;
+4. `learning_rate_init`: 0,001 ou 0,01.
+
+O conjunto escolhido foi `(64, 32)`, `relu`, `alpha=0.0001` e `learning_rate_init=0.01`, com 27 iterações. A taxa de aprendizado escolhida é o maior valor da grade.
+
+O SVM é o `SVC`, também com `GridSearchCV` (5 partes, acurácia). A grade tem 40 combinações. O kernel `linear` é testado com `C` de 0,1, 1, 10 ou 100 e com `class_weight` `None` ou `balanced`. O kernel `rbf` é testado com os mesmos valores e com `gamma` `scale`, 0,01, 0,1 ou 1. O `gamma` só vale para o `rbf`, por isso o kernel linear tem uma grade própria. O conjunto escolhido foi kernel `linear`, `C=1` e `class_weight=None`.
+
+O desempenho de cada modelo é medido por `cross_val_score`, com 5 partes e acurácia, usando um modelo novo com os hiperparâmetros escolhidos sobre o conjunto inteiro. A MLP teve média 0,9596 e desvio-padrão 0,0057, e o SVM, 0,9633 e 0,0017. No recorte de teste, a acurácia foi 0,9401 na MLP e 0,9596 no SVM, e a ROC AUC (um contra os demais, média macro) foi 0,9912 e 0,9896. No SVM, a AUC usa a distância à fronteira de decisão em vez de probabilidades. Para comparação, o Naive Bayes teve média 0,9238, a árvore de decisão 0,9480 e o k-NN 0,9444.
+
+São gravados `reports/figures/models_cross_validation.png` (média e desvio dos cinco classificadores), `mlp_training.png` (perda e validação interna da MLP) e `mlp_svm_confusion_matrices.png` (matrizes do teste). O artigo da etapa está em `docs/article/rna_svm/rna_svm.tex`.

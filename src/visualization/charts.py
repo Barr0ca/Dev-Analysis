@@ -106,6 +106,7 @@ def classification_charts(data, nb_scores, tree_scores, nb_matrix, tree_matrix):
     fig.savefig("./reports/figures/confusion_matrices.png", dpi=150)
     plt.close(fig)
 
+
 def knn_charts(k_results, best_k, nb_scores, tree_scores, knn_scores, knn_matrix):
     # Acurácia média da busca para cada valor de k
     fig, ax = plt.subplots(figsize=(8, 4))
@@ -118,7 +119,9 @@ def knn_charts(k_results, best_k, nb_scores, tree_scores, knn_scores, knn_matrix
         capsize=3,
     )
     best = k_results[k_results["k"] == best_k].iloc[0]
-    ax.scatter([best_k], [best["accuracy"]], color="#E45756", zorder=3, label=f"k = {best_k}")
+    ax.scatter(
+        [best_k], [best["accuracy"]], color="#E45756", zorder=3, label=f"k = {best_k}"
+    )
     ax.set_xticks(list(k_results["k"]))
     ax.set_title("Impacto do valor de k no k-NN")
     ax.set_xlabel("Valor de k")
@@ -176,10 +179,18 @@ def knn_charts(k_results, best_k, nb_scores, tree_scores, knn_scores, knn_matrix
     for row in range(values.shape[0]):
         for column in range(values.shape[1]):
             color = "white" if values[row, column] > darkest else "black"
-            ax.text(column, row, int(values[row, column]), ha="center", va="center", color=color)
+            ax.text(
+                column,
+                row,
+                int(values[row, column]),
+                ha="center",
+                va="center",
+                color=color,
+            )
     fig.tight_layout()
     fig.savefig("./reports/figures/knn_confusion_matrix.png", dpi=150)
     plt.close(fig)
+
 
 def rna_svm_charts(scores, mlp_loss, mlp_validation, mlp_matrix, svm_matrix):
     # Acurácia média e desvio-padrão da validação cruzada dos cinco classificadores

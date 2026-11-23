@@ -14,6 +14,7 @@ from src.visualization.charts import (
     rna_svm_charts,
 )
 
+
 def main():
     # Carrega os dados do arquivo CSV
     data = load_data("data/raw/dataset.csv")
@@ -115,6 +116,7 @@ def main():
 
     print("\nHierárquico - Clusters versus Overall_Impact:")
     print(hierarchical_label_comparison)
+
 
 if __name__ == "__main__":
     main()
